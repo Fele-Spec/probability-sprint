@@ -55,6 +55,23 @@ async function main() {
   assert(await ev(`!!document.querySelector('.hero2') && !!document.querySelector('.starmap-card')`), 'Hero 与星图存在');
   assert(await ev(`!!document.querySelector('.mascot-dock .mascot-btn')`), '骰仔助手存在');
   assert(await ev(`document.querySelectorAll('.map-node').length === 16`), '星图 16 个节点');
+  assert(await ev(`getComputedStyle(document.querySelector('.quest-card')).cursor === 'pointer'`), '任务卡显示可点击光标');
+
+  console.log('\n[点击反馈]');
+  await ev(`(()=>{const btn=document.querySelector('.hero2 .btn-sun'); const r=btn.getBoundingClientRect(); btn.dispatchEvent(new MouseEvent('pointerdown',{bubbles:true,cancelable:true,clientX:r.left+r.width/2,clientY:r.top+r.height/2})); return true;})()`);
+  await sleep(80);
+  assert(await ev(`!!document.querySelector('.hero2 .btn-sun .ripple')`), '按钮点击产生涟漪');
+  await ev(`(()=>{const n=document.querySelector('.map-node[data-sec="1-2"]'); const r=n.getBoundingClientRect(); n.dispatchEvent(new MouseEvent('pointermove',{bubbles:true,clientX:r.left+r.width/2,clientY:r.top+r.height/2})); return true;})()`);
+  await sleep(120);
+  assert(await ev(`document.querySelector('#map-tip') && document.querySelector('#map-tip').classList.contains('show')`), '星图悬停出现提示');
+  assert(await ev(`document.querySelector('#map-tip').textContent.includes('样本空间')`), '悬停提示显示知识点名称');
+
+  console.log('\n[整卡点击]');
+  await ev(`document.querySelector('.quest-card.learn').dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))`);
+  await sleep(500);
+  assert(await ev(`location.hash.startsWith('#/learn/')`), '点击学习任务卡进入小节');
+  await ev(`location.hash = '#/today'`);
+  await sleep(400);
 
   console.log('\n[星图跳转]');
   await click(`document.querySelector('.map-node[data-sec="1-1"]')`);

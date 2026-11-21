@@ -64,8 +64,9 @@
         const cls = ['map-node'];
         if (learned) cls.push('learned');
         if (isCurrent) cls.push('current');
-        return '<g class="' + cls.join(' ') + '" data-action="map-sec" data-sec="' + sec.id + '" tabindex="0" role="link" aria-label="' + App.esc(sec.title) + '">' +
+        return '<g class="' + cls.join(' ') + '" data-action="map-sec" data-sec="' + sec.id + '" data-name="' + App.esc(sec.num + ' ' + sec.title) + '" tabindex="0" role="link" aria-label="' + App.esc(sec.title) + '">' +
           '<title>' + App.esc(sec.num + ' ' + sec.title + (learned ? ' · 已学' : ' · 未学')) + '</title>' +
+          '<circle class="node-hit" cx="' + pos[0] + '" cy="' + pos[1] + '" r="24"></circle>' +
           '<circle class="node-halo" cx="' + pos[0] + '" cy="' + pos[1] + '" r="19"></circle>' +
           '<circle class="node-core" cx="' + pos[0] + '" cy="' + pos[1] + '" r="' + (isCurrent ? 10.5 : 9) + '"></circle>' +
           '<text class="node-label" x="' + pos[0] + '" y="' + (pos[1] + 21) + '">' + sec.num + '</text>' +
@@ -188,7 +189,7 @@
 
     const quests =
       '<section class="quest-grid">' +
-        '<article class="quest-card review' + (reviewDone ? ' done' : '') + '">' +
+        '<article class="quest-card review' + (reviewDone ? ' done' : '') + '" data-action="today-review" title="点击开始今天的到期复习">' +
           (reviewDone ? '<span class="done-stamp">CLEAR</span>' : '') +
           '<div class="quest-top"><span class="quest-icon">🔁</span><span class="quest-tag">QUEST 01</span></div>' +
           '<h4>清掉到期复习</h4>' +
@@ -196,10 +197,10 @@
           '<div class="quest-note">' + reviewMeta + '</div>' +
           '<div class="quest-bar"><span style="width:' + (reviewDone ? 100 : 0) + '%"></span></div>' +
           '<div class="quest-foot"><span class="quest-meta">' + (due.length ? due.length + ' 项待清' : '清空') + '</span>' +
-            '<button class="btn btn-sm ' + (due.length ? 'qbtn-dark' : 'btn-ghost') + '" data-action="today-review" ' + (due.length ? '' : 'disabled') + '>' +
+            '<button class="btn btn-sm ' + (due.length ? 'qbtn-dark' : 'btn-ghost') + '" data-action="today-review">' +
             (due.length ? '开始复习' : '已清空') + '</button></div>' +
         '</article>' +
-        '<article class="quest-card learn' + (learnDone ? ' done' : '') + '">' +
+        '<article class="quest-card learn' + (learnDone ? ' done' : '') + '" data-action="today-learn" title="点击开始今天的新小节">' +
           (learnDone ? '<span class="done-stamp">CLEAR</span>' : '') +
           '<div class="quest-top"><span class="quest-icon">📖</span><span class="quest-tag">QUEST 02</span></div>' +
           '<h4>' + (todaySections.length ? '学 ' + todaySections.length + ' 个新小节' : '复习日：模拟 + 错题') + '</h4>' +
@@ -207,7 +208,7 @@
           '<div class="quest-secs">' + sectionRows + '</div>' +
           '<div class="quest-foot"><span class="quest-meta">' + learnedCount + ' / ' + todaySections.length + ' 已学</span>' + learnCta + '</div>' +
         '</article>' +
-        '<article class="quest-card drill' + (practiceDone ? ' done' : '') + '">' +
+        '<article class="quest-card drill' + (practiceDone ? ' done' : '') + '" data-action="today-practice" title="点击开始今天的专项练习">' +
           (practiceDone ? '<span class="done-stamp">CLEAR</span>' : '') +
           '<div class="quest-top"><span class="quest-icon">✏️</span><span class="quest-tag">QUEST 03</span></div>' +
           '<h4>专项练 ' + target + ' 题</h4>' +
@@ -270,6 +271,7 @@
             '<span><i class="lg-todo"></i>未学</span>' +
           '</div>' +
         '</div>' +
+        '<div class="map-tip" id="map-tip" aria-hidden="true"></div>' +
         '<div class="starmap-svg-wrap">' + starMapSVG(planDay) + '</div>' +
         '<div class="starmap-mobile">' + starMapMobile(planDay) + '</div>' +
         '<div class="starmap-foot"><span>点亮一颗星 = 学完一个小节 · 点击星星直接跳转</span>' +
@@ -302,8 +304,17 @@
 
   App.actions['today-review'] = function () {
     const due = App.dueItems();
-    if (!due.length) return;
+    if (!due.length) { App.toast('今天没有到期内容，去学一节新课或练一组题吧'); return; }
     App.startQuiz({ items: due, mode: 'review', title: '今日复习' });
+  };
+
+  App.actions['today-learn'] = function () {
+    const planDay = Store.planDay();
+    const sections = currentPlanSections(planDay).map(function (id) { return App.sectionById[id]; }).filter(Boolean);
+    const next = sections.find(function (sec) { return !App.sectionLearned(sec.id); });
+    if (next) App.go('#/learn/' + next.id);
+    else if (sections.length) App.go('#/learn/' + sections[0].id);
+    else App.go('#/learn');
   };
 
   App.actions['today-practice'] = function () {

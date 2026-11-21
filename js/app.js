@@ -112,6 +112,49 @@
     App.toast('骰仔先躲一会儿，刷新页面会回来');
   };
 
+  App.setupJuice = function () {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // 点击涟漪：给按钮/卡片一个即时的按压反馈
+    document.addEventListener('pointerdown', function (e) {
+      if (reduce) return;
+      const el = e.target.closest ? e.target.closest('.btn, .chip, .option, .nav-item, .lab-tab, .learn-tab, .quest-card, .chapter-tab, .achievement, .quick-link2, .tabbar a') : null;
+      if (!el || el.disabled) return;
+      const rect = el.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const size = Math.min(360, Math.max(rect.width, rect.height) * 0.9);
+      const dot = document.createElement('span');
+      dot.className = 'ripple';
+      dot.style.width = size + 'px';
+      dot.style.height = size + 'px';
+      dot.style.left = (e.clientX - rect.left) + 'px';
+      dot.style.top = (e.clientY - rect.top) + 'px';
+      el.appendChild(dot);
+      setTimeout(function () { dot.remove(); }, 620);
+    }, { passive: true });
+
+    // 星图悬停：显示知识点名称，让星星“可读”
+    document.addEventListener('pointermove', function (e) {
+      const tip = document.getElementById('map-tip');
+      if (!tip) return;
+      const node = e.target.closest ? e.target.closest('.map-node') : null;
+      if (!node) { tip.classList.remove('show'); return; }
+      const card = node.closest('.starmap-card');
+      if (!card) return;
+      const r = card.getBoundingClientRect();
+      tip.textContent = node.getAttribute('data-name') || '';
+      const x = e.clientX - r.left + 14;
+      const y = e.clientY - r.top - 40;
+      tip.style.left = Math.max(12, Math.min(r.width - 220, x)) + 'px';
+      tip.style.top = Math.max(10, y) + 'px';
+      tip.classList.add('show');
+    }, { passive: true });
+    window.addEventListener('scroll', function () {
+      const tip = document.getElementById('map-tip');
+      if (tip) tip.classList.remove('show');
+    }, { passive: true });
+  };
+
   const NAV = [
     { id: 'today', href: '#/today', icon: '☀️', label: '今日' },
     { id: 'learn', href: '#/learn', icon: '📖', label: '学习' },
@@ -717,6 +760,7 @@
     buildIndexes();
     App.checkAchievements(true);
     App.setupMascot();
+    App.setupJuice();
     if (!App.state.achievements['first-step']) {
       App.state.achievements['first-step'] = Date.now();
       Store.save();
