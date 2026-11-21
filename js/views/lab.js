@@ -3,9 +3,9 @@
   const App = root.App;
 
   const C = {
-    ink: '#211f1b', muted: '#6e675b', faint: '#9a9284', line: '#e4dbc9',
-    accent: '#0e7c66', accentSoft: '#dff1ea', coral: '#e4572e', amber: '#d99a2b',
-    blue: '#3763c9', surface: '#fffdf8', soft: '#f7f3ea'
+    ink: '#1c2a25', muted: '#64736b', faint: '#93a099', line: '#e7dac4',
+    accent: '#0e6b57', accentSoft: '#ddf3ea', coral: '#f26a4b', amber: '#e9a72c',
+    blue: '#5e6fd0', surface: '#fffcf4', soft: '#f8f3e8'
   };
 
   const TABS = [

@@ -20,6 +20,7 @@
       '<div class="page-head"><div class="eyebrow">PRACTICE · 94 QUESTIONS</div>' +
       '<h1>练题</h1>' +
       '<div class="sub">先复习到期内容，再做专项。每道题都带提示与分步详解；做错的题会自动进入错题本，连续答对两次才移出。</div></div>' +
+      '<div class="coach-note">' + App.mascotSVG(38) + '<span><b>骰仔：</b>先复习，再练新题。错题连续答对两次才会出本子，急不得。</span></div>' +
       '<div class="seg">' + seg + '</div>' +
       '<div id="practice-panel"></div>';
 
@@ -54,15 +55,15 @@
             '</p>' +
             '<button class="btn btn-primary btn-lg" style="margin-top:14px" data-action="start-review">开始复习（' + due.length + ' 项）</button>' +
           '</div>'
-        : '<div class="empty"><span class="big">🍵</span>今天的到期复习已经清空。<br>' +
+        : '<div class="empty">' + App.mascotSVG(84) + '今天的到期复习已经清空。<br>' +
           '<span class="small">下次复习：' + App.nextDueText() + '。现在可以做一组新题。</span><br>' +
           '<button class="btn btn-ghost" style="margin-top:14px" data-action="practice-tab" data-tab="drill">去专项练习 →</button></div>') +
       '</div>' +
 
       '<div class="grid-3" style="margin-top:16px">' +
-        '<div class="card card-pad"><div class="stat-label">已掌握题目</div><div class="stat-num">' + stats.mastered + '</div><div class="stat-sub">连续答对 ≥2 次</div></div>' +
-        '<div class="card card-pad"><div class="stat-label">错题待清</div><div class="stat-num">' + stats.wrongCount + '</div><div class="stat-sub">连续答对 2 次自动移出</div></div>' +
-        '<div class="card card-pad"><div class="stat-label">复习机制</div><div class="stat-num">SM-2</div><div class="stat-sub">按考试日封顶间隔</div></div>' +
+        '<div class="card card-pad stat-card"><div class="stat-label">已掌握题目</div><div class="stat-num">' + stats.mastered + '</div><div class="stat-sub">连续答对 ≥2 次</div></div>' +
+        '<div class="card card-pad stat-card"><div class="stat-label">错题待清</div><div class="stat-num">' + stats.wrongCount + '</div><div class="stat-sub">连续答对 2 次自动移出</div></div>' +
+        '<div class="card card-pad stat-card"><div class="stat-label">复习机制</div><div class="stat-num">SM-2</div><div class="stat-sub">按考试日封顶间隔</div></div>' +
       '</div>' +
 
       '<div class="card card-pad" style="margin-top:16px">' +
@@ -165,17 +166,18 @@
   /* ---------------- 全真模拟 ---------------- */
   function renderExam(panel, stats) {
     const best = App.state.flags.examBest;
-    panel.innerHTML = '<div class="card card-pad">' +
-      '<div class="card-head"><div class="card-title">🧪 全真模拟</div><span class="card-sub">只含选择 + 填空</span></div>' +
-      '<p class="small muted" style="line-height:1.8">从三章中随机抽 20 道客观题。' +
-      '<strong>答题过程中不给反馈</strong>，全部做完后统一批改，模拟真实考试的感觉。用时会计时。</p>' +
-      '<div class="grid-3" style="margin:16px 0">' +
-        '<div class="stat-card"><div class="stat-label">题量</div><div class="stat-num">20</div><div class="stat-sub">选择 / 填空</div></div>' +
-        '<div class="stat-card"><div class="stat-label">范围</div><div class="stat-num">3</div><div class="stat-sub">章全覆盖</div></div>' +
-        '<div class="stat-card"><div class="stat-label">历史最好</div><div class="stat-num">' + (best ? best.score + '/' + best.total : '—') + '</div><div class="stat-sub">' + (best ? new Date(best.ts).toLocaleDateString('zh-CN') : '还没考过') + '</div></div>' +
+    panel.innerHTML = '<div class="boss-card">' +
+      '<span class="boss-sticker">BOSS · 20 Q</span>' +
+      '<div class="eyebrow">FINAL CHALLENGE · 3 CHAPTERS</div>' +
+      '<h2>全真模拟</h2>' +
+      '<p>从三章中随机抽 20 道客观题。<strong>答题过程中不给反馈</strong>，全部做完后统一批改，模拟真实考试的感觉。用时会计时。</p>' +
+      '<div class="boss-stats">' +
+        '<div><b>20</b><span>道客观题</span></div>' +
+        '<div><b>3</b><span>章全覆盖</span></div>' +
+        '<div><b>' + (best ? best.score + '/' + best.total : '—') + '</b><span>历史最好 · ' + (best ? new Date(best.ts).toLocaleDateString('zh-CN') : '还没考过') + '</span></div>' +
       '</div>' +
-      '<div class="callout amber" style="font-size:13px">考试模式下不会即时显示对错。做完后统一批改，并自动把错题加入复习队列。</div>' +
-      '<button class="btn btn-primary btn-lg" style="margin-top:16px" data-action="start-exam">开始模拟（20 题）→</button>' +
+      '<div class="boss-note">考试模式下不会即时显示对错。做完后统一批改，并自动把错题加入复习队列。</div>' +
+      '<button class="btn btn-sun btn-lg" data-action="start-exam">挑战开始 →</button>' +
     '</div>' +
 
     '<div class="grid-2" style="margin-top:16px">' +

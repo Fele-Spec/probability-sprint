@@ -203,6 +203,7 @@
           '<a class="btn btn-sm btn-ghost" href="#/method">看设计依据</a>' +
           '<a class="btn btn-sm btn-ghost" href="#/cheatsheet">公式速查</a>' +
           '<a class="btn btn-sm btn-ghost" href="#/today">回到今日</a>' +
+          '<a class="btn btn-sm btn-ghost" href="https://fele-spec.github.io/probability-sprint/" target="_blank" rel="noopener">🌐 在线版</a>' +
         '</div>' +
       '</div>' +
 

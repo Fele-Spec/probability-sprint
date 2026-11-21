@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    应用外壳：路由、导航、间隔复习队列、XP/连击/成就、全局状态
    ============================================================ */
 (function (root) {
@@ -21,6 +21,96 @@
   App.views = App.views || {};
   App.labCleanup = null;
   App.quizKeyHandler = null;
+
+  /* ---------------- 吉祥物与氛围 ---------------- */
+  const MASCOT_LINES = {
+    today: '先清复习，再学新的。',
+    learn: '先猜后学，答错也算练。',
+    section: '翻面前，先在心里回答一遍。',
+    practice: '错题比新题值钱。',
+    quiz: '别急，先看清题目在问什么。',
+    lab: '拖一拖参数，看看曲线怎么变。',
+    stats: '连续天数只是记录，不是债务。',
+    method: '别只收藏方法，去用一次。',
+    cheatsheet: '遮住右边，默写一遍。',
+    settings: '考试日只影响倒计时，不跳章节。'
+  };
+
+  App.mascotSVG = function (size) {
+    const s = size || 40;
+    return '<svg class="mascot-svg" viewBox="0 0 120 120" width="' + s + '" height="' + s + '" aria-hidden="true">' +
+      '<ellipse cx="60" cy="110" rx="28" ry="5" fill="rgba(28,42,37,.14)"/>' +
+      '<rect x="20" y="12" width="80" height="80" rx="24" fill="#FFF6DE" stroke="#1C2A25" stroke-width="4"/>' +
+      '<circle cx="35" cy="30" r="4.6" fill="#1C2A25"/>' +
+      '<circle cx="85" cy="30" r="4.6" fill="#1C2A25"/>' +
+      '<circle cx="85" cy="78" r="4.6" fill="#1C2A25"/>' +
+      '<ellipse class="mascot-eye" cx="45" cy="53" rx="5.2" ry="6.8" fill="#1C2A25"/>' +
+      '<ellipse class="mascot-eye" cx="75" cy="53" rx="5.2" ry="6.8" fill="#1C2A25"/>' +
+      '<circle cx="33" cy="66" r="4.6" fill="#F4A28C" opacity=".55"/>' +
+      '<circle cx="87" cy="66" r="4.6" fill="#F4A28C" opacity=".55"/>' +
+      '<path d="M50 68 Q60 77 70 68" fill="none" stroke="#1C2A25" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M99 47 l2.5 6.3 6.3 2.5 -6.3 2.5 -2.5 6.3 -2.5 -6.3 -6.3 -2.5 6.3 -2.5z" fill="#F4B63F"/>' +
+    '</svg>';
+  };
+
+  App.confetti = function (count) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const rootEl = document.getElementById('confetti-root');
+    if (!rootEl) return;
+    const colors = ['#F4B63F', '#F26A4B', '#0E6B57', '#7B74D9', '#F2C9D8', '#BFE3F7', '#FFE8A9'];
+    const amount = count || 28;
+    for (let i = 0; i < amount; i++) {
+      const piece = document.createElement('span');
+      piece.className = 'confetti-piece';
+      piece.style.left = (8 + Math.random() * 84) + '%';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.setProperty('--dx', (Math.random() * 260 - 130) + 'px');
+      piece.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
+      piece.style.animationDelay = (Math.random() * 0.16) + 's';
+      piece.style.width = (6 + Math.random() * 7) + 'px';
+      piece.style.height = (8 + Math.random() * 10) + 'px';
+      if (Math.random() < 0.35) piece.style.borderRadius = '50%';
+      rootEl.appendChild(piece);
+      setTimeout(function () { piece.remove(); }, 1750);
+    }
+  };
+
+  App.updateMascot = function () {
+    const dock = document.getElementById('mascot-dock');
+    if (!dock) return;
+    const bubble = dock.querySelector('.mascot-bubble');
+    if (bubble) bubble.textContent = MASCOT_LINES[App.route ? App.route.name : 'today'] || '先做一题，状态就来了。';
+    dock.classList.toggle('hidden', !!App.ui.mascotHidden);
+  };
+
+  App.setupMascot = function () {
+    const dock = document.getElementById('mascot-dock');
+    if (!dock) return;
+    try { App.ui.mascotHidden = sessionStorage.getItem('prob-mascot-hidden') === '1'; } catch (err) { /* ignore */ }
+    dock.hidden = false;
+    dock.innerHTML = '<div class="mascot-bubble">先做一题，状态就来了。</div>' +
+      '<button class="mascot-btn" data-action="mascot-tip" aria-label="骰仔助手，点一下换一条提示">' + App.mascotSVG(60) + '</button>' +
+      '<button class="mascot-close" data-action="mascot-close" aria-label="收起骰仔">×</button>';
+    App.updateMascot();
+  };
+
+  App.actions['mascot-tip'] = function (el) {
+    const tips = App.data.tips || [];
+    if (tips.length) App.toast('🎲 ' + tips[Math.floor(Math.random() * tips.length)], 4200);
+    const btn = document.querySelector('.mascot-btn');
+    if (btn) {
+      btn.classList.remove('celebrate-badge');
+      void btn.offsetWidth;
+      btn.classList.add('celebrate-badge');
+    }
+  };
+
+  App.actions['mascot-close'] = function () {
+    App.ui.mascotHidden = true;
+    try { sessionStorage.setItem('prob-mascot-hidden', '1'); } catch (err) { /* ignore */ }
+    App.updateMascot();
+    App.toast('骰仔先躲一会儿，刷新页面会回来');
+  };
 
   const NAV = [
     { id: 'today', href: '#/today', icon: '☀️', label: '今日' },
@@ -139,6 +229,7 @@
     const after = Store.levelInfo();
     if (after.level > before.level) {
       App.toast('🎉 升级！Lv.' + after.level + ' · ' + after.title, 3200);
+      App.confetti(56);
     }
     return amount;
   };
@@ -288,7 +379,10 @@
       revealed: false,
       hintUsed: false,
       feedback: null,
-      calcRating: null
+      calcRating: null,
+      combo: 0,
+      maxCombo: 0,
+      celebrated: false
     };
     App.go('#/quiz');
   };
@@ -359,6 +453,7 @@
         unlocked.forEach(function (a) {
           App.toast(a.icon + ' 解锁成就「' + a.name + '」', 3200);
         });
+        App.confetti(26);
       }
     }
     return unlocked;
@@ -550,21 +645,22 @@
     const due = App.dueItems().length;
 
     return '<aside class="sidebar">' +
-      '<a class="brand" href="#/today"><span class="brand-mark">🎲</span>' +
+      '<a class="brand" href="#/today"><span class="brand-mark">' + App.mascotSVG(40) + '</span>' +
       '<span><span class="brand-name">概率冲刺</span><span class="brand-sub">PROB SPRINT · 7 DAYS</span></span></a>' +
+      '<div class="nav-caption">PLAYGROUND</div>' +
       '<nav class="nav">' + nav + '</nav>' +
       '<div class="nav-note">浙大版第五版 · 前三章<br>16 小节 · 94 道题 · 4 个实验室</div>' +
       '<div class="side-foot">' +
-        '<div class="side-card">' +
-          '<div class="row"><span class="side-label">连续学习</span><span class="side-value">🔥 ' + streak + ' 天</span></div>' +
-          '<div class="side-hint">Lv.' + lvl.level + ' · ' + lvl.title + '</div>' +
-          '<div class="progress" style="margin-top:8px"><span style="width:' + Math.round(lvl.pct * 100) + '%"></span></div>' +
-          '<div class="side-hint" style="margin-top:5px">' + examText + ' · 到期 ' + due + '</div>' +
+        '<div class="passport">' +
+          '<div class="passport-head"><span class="passport-lv">Lv.' + lvl.level + '</span><span class="passport-title">' + lvl.title + '</span></div>' +
+          '<div class="passport-xp"><span>' + lvl.progress + ' / ' + lvl.need + ' XP</span><span>' + s.xp + ' total</span></div>' +
+          '<div class="progress"><span style="width:' + Math.round(lvl.pct * 100) + '%"></span></div>' +
+          '<div class="passport-meta"><span>🔥 <b>' + streak + '</b> 天</span><span>' + examText + ' · 到期 ' + due + '</span></div>' +
         '</div>' +
         '<a class="nav-item" href="#/settings"><span class="nav-icon">⚙️</span><span>设置与数据</span></a>' +
       '</div>' +
     '</aside>' +
-    '<div class="mobile-top"><span class="brand-mark">🎲</span><span class="brand-name">概率冲刺</span><span class="spacer"></span>' +
+    '<div class="mobile-top"><span class="brand-mark">' + App.mascotSVG(30) + '</span><span class="brand-name">概率冲刺</span><span class="spacer"></span>' +
       '<span class="m-streak">🔥 ' + streak + ' 天 · Lv.' + lvl.level + '</span></div>' +
     '<main class="main" id="view"></main>' +
     '<nav class="tabbar">' + tabs + '</nav>';
@@ -584,12 +680,17 @@
       location.hash = '#/practice';
       return;
     }
+    const routeKey = route.name + ':' + (route.params.secId || '');
+    const changed = routeKey !== App._routeKey;
+    App._routeKey = routeKey;
     App.route = route;
+    document.body.dataset.route = route.name;
     document.title = '概率冲刺 · ' + (TITLES[route.name] || '今日');
 
     const app = document.getElementById('app');
     app.innerHTML = shellHTML(route);
     const view = document.getElementById('view');
+    if (changed) view.classList.add('route-enter');
     const fn = App.views[route.name] || App.views.today;
     try {
       fn(view, route.params);
@@ -599,6 +700,7 @@
         '<p class="muted" style="margin-top:8px">' + App.esc(err.message) + '</p>' +
         '<button class="btn btn-primary" style="margin-top:14px" onclick="location.reload()">刷新页面</button></div>';
     }
+    App.updateMascot();
     if (!opts.keepScroll) window.scrollTo(0, 0);
   };
 
@@ -614,6 +716,7 @@
     App.state = Store.load();
     buildIndexes();
     App.checkAchievements(true);
+    App.setupMascot();
     if (!App.state.achievements['first-step']) {
       App.state.achievements['first-step'] = Date.now();
       Store.save();

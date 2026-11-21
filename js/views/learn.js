@@ -1,6 +1,7 @@
 /* 学习：章节地图 + 小节精学（卡片 / 公式 / 例题 / 自述） */
 (function (root) {
   const App = root.App;
+  const CH_COLOR = { 1: '#0E6B57', 2: '#5E6FD0', 3: '#F26A4B' };
 
   function qCountOf(secId) {
     return App.data.questions.filter(function (q) { return q.sec === secId; }).length;
@@ -18,14 +19,14 @@
         '<span class="ch-emoji">' + ch.emoji + '</span>' +
         '<span><span class="ch-name">第' + ['一', '二', '三'][ch.id - 1] + '章</span>' +
         '<span class="ch-sub">' + ch.title + '</span></span>' +
-        '<span class="ch-pct">' + p.done + '/' + p.total + '</span>' +
+        '<span class="ch-ring" style="--p:' + Math.round(p.pct * 100) + '"><span>' + p.done + '/' + p.total + '</span></span>' +
         '</button>';
     }).join('');
 
     const rows = current.sections.map(function (sec) {
       const done = App.sectionLearned(sec.id);
       const pct = Math.round(App.sectionProgress(sec) * 100);
-      return '<a class="section-item' + (done ? ' done' : '') + '" href="#/learn/' + sec.id + '">' +
+      return '<a class="section-item' + (done ? ' done' : '') + '" href="#/learn/' + sec.id + '" style="--ch:' + CH_COLOR[current.id] + '">' +
         '<span class="section-num">' + (done ? '✓' : sec.num) + '</span>' +
         '<span class="section-main">' +
           '<span class="section-title">' + sec.title + '</span>' +
@@ -44,7 +45,7 @@
 
       '<div class="chapter-tabs">' + tabs + '</div>' +
 
-      '<div class="chapter-banner">' +
+      '<div class="chapter-banner" style="--ch:' + CH_COLOR[current.id] + '">' +
         '<div class="n">0' + current.id + '</div>' +
         '<div style="flex:1;min-width:0">' +
           '<h2>' + current.emoji + ' ' + current.title + '</h2>' +
@@ -109,8 +110,9 @@
         '<button class="btn btn-sm btn-ghost" data-action="learn-prev" data-sec="' + sec.id + '">← 上一节</button>' +
         '<button class="btn btn-sm btn-ghost" data-action="learn-next" data-sec="' + sec.id + '">下一节 →</button>' +
         '<span class="spacer"></span>' +
-        '<span class="small muted">卡片掌握 ' + pct + '%</span>' +
+        '<span class="small muted">卡片已看 ' + pct + '%</span>' +
       '</div>' +
+      (tab === 'cards' ? '<div class="coach-note">' + App.mascotSVG(38) + '<span><b>骰仔：</b>先猜后学。翻面之前先在心里回答一遍，答错也算练。</span></div>' : '') +
       tabBar +
       '<div id="learn-panel"></div>';
 
@@ -136,8 +138,8 @@
 
     if (done) {
       panel.innerHTML = '<div class="flash-wrap"><div class="flashcard" style="align-items:center;text-align:center;justify-content:center">' +
-        '<div style="font-size:38px">🎉</div>' +
-        '<div style="font-size:20px;font-weight:700;margin-top:8px">本节卡片过完了</div>' +
+        '<div style="margin-bottom:-8px">' + App.mascotSVG(92) + '</div>' +
+        '<div style="font-size:22px;font-weight:850;margin-top:8px">本节卡片过完了 🎉</div>' +
         '<p class="muted" style="margin-top:8px;max-width:44ch">' + (App.sectionLearned(sec.id) ? '已自动标记为“已学”，明天会进入复习队列。' : '把它们标记为已学，明天就会进入复习队列。') + '</p>' +
         '<div class="flash-actions" style="justify-content:center;margin-top:18px">' +
           '<button class="btn btn-primary" data-action="learn-test" data-sec="' + sec.id + '">做随堂自测</button>' +
@@ -160,9 +162,9 @@
         (revealed
           ? '<div class="flash-a">' + card.a + '</div>' + (card.tip ? '<div class="flash-tip">💡 ' + card.tip + '</div>' : '') +
             '<div class="flash-foot"><div class="flash-actions">' +
-              '<button class="btn btn-sm btn-ghost" data-action="learn-rate" data-grade="again" data-sec="' + sec.id + '">没记住</button>' +
-              '<button class="btn btn-sm btn-ghost" data-action="learn-rate" data-grade="hard" data-sec="' + sec.id + '">有点模糊</button>' +
-              '<button class="btn btn-sm btn-primary" data-action="learn-rate" data-grade="good" data-sec="' + sec.id + '">记住了</button>' +
+              '<button class="btn btn-sm btn-ghost" data-action="learn-rate" data-grade="again" data-sec="' + sec.id + '">😵 没记住</button>' +
+              '<button class="btn btn-sm btn-ghost" data-action="learn-rate" data-grade="hard" data-sec="' + sec.id + '">🤔 有点模糊</button>' +
+              '<button class="btn btn-sm btn-primary" data-action="learn-rate" data-grade="good" data-sec="' + sec.id + '">😎 记住了</button>' +
             '</div></div>'
           : '<div class="flash-foot"><button class="btn btn-primary" data-action="learn-reveal">想好了，翻面</button><span class="flash-hint">先在心里回答，再翻面核对</span></div>') +
       '</div>' +
@@ -202,8 +204,8 @@
     const note = App.state.notes[sec.id] || { text: '', ts: 0 };
     const when = note.ts ? new Date(note.ts).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
     panel.innerHTML = '<div class="flash-wrap"><div class="card card-pad note-box">' +
-      '<div class="card-head"><div class="card-title">🗣️ 费曼自述</div><span class="card-sub">用自己的话，别抄公式</span></div>' +
-      '<p class="small muted" style="margin-bottom:10px">假设室友没学过概率。用 2~3 句话讲清「' + sec.title + '」的核心。卡住的地方，就是你还没懂的地方。</p>' +
+      '<div class="card-head"><div class="card-title">🗣️ 讲给骰仔听</div><span class="card-sub">用自己的话，别抄公式</span></div>' +
+      '<p class="small muted" style="margin-bottom:10px">假设骰仔没学过概率。用 2~3 句话讲清「' + sec.title + '」的核心。卡住的地方，就是你还没懂的地方。</p>' +
       '<textarea id="feynman-note" placeholder="例如：这一节其实是在说……关键是……容易错在……">' + App.esc(note.text) + '</textarea>' +
       '<div class="note-foot"><span class="small faint">' + (when ? '上次保存：' + when : '还没有保存过') + '</span>' +
       '<button class="btn btn-sm btn-primary" data-action="learn-save-note" data-sec="' + sec.id + '">保存自述 +3 能量</button></div>' +
@@ -239,6 +241,7 @@
     } else {
       App.ui.cardDone = true;
       App.markSectionLearned(sec.id);
+      App.confetti(46);
     }
     App.render({ keepScroll: true });
   };
@@ -251,7 +254,10 @@
   };
 
   App.actions['learn-mark'] = function (el) {
-    App.markSectionLearned(el.getAttribute('data-sec'));
+    const secId = el.getAttribute('data-sec');
+    const was = App.sectionLearned(secId);
+    App.markSectionLearned(secId);
+    if (!was) App.confetti(22);
     App.render({ keepScroll: true });
   };
 

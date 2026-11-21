@@ -136,7 +136,8 @@
         '<span class="chip chip-soft" style="cursor:default">' + ({ choice: '选择题', fill: '填空题', calc: '计算题' })[q.type] + '</span>' +
         '<span class="chip chip-amber" style="cursor:default">' + DIFF_LABEL[q.diff] + '</span>' +
         '<span class="small muted">' + sec.num + ' ' + sec.title + '</span>' +
-        (s.mode === 'test' ? '<span class="small faint" style="margin-left:auto">考试模式 · 统一批改</span>' : '');
+        (s.mode === 'test' ? '<span class="small faint" style="margin-left:auto">考试模式 · 统一批改</span>' : '') +
+        (s.combo >= 2 ? '<span class="combo-pill">🔥 连对 ' + s.combo + '</span>' : '');
     }
 
     const fb = s.feedback;
@@ -227,6 +228,8 @@
       hintUsed: s.hintUsed,
       mode: s.mode
     });
+    s.combo = correct ? (s.combo || 0) + 1 : 0;
+    s.maxCombo = Math.max(s.maxCombo || 0, s.combo);
     s.graded += 1;
     if (correct) s.correct += 1;
     s.xp = (s.xp || 0) + res.xp;
@@ -260,6 +263,11 @@
       }
     }
     if (graded >= 6 && correct === graded) App.state.flags.perfect = true;
+    if (!s.celebrated && s.graded > 0) {
+      s.celebrated = true;
+      const acc = s.correct / s.graded;
+      if (s.mode === 'test' || acc >= 0.8) App.confetti(s.mode === 'test' ? 44 : 34);
+    }
     App.save();
     App.checkAchievements();
   }
@@ -293,9 +301,11 @@
 
     view.innerHTML = '<div class="quiz-wrap"><div class="card card-pad">' +
       '<div class="summary">' +
+        '<div class="summary-medal">' + (total ? (acc >= 0.9 ? '🏆' : acc >= 0.6 ? '💪' : '🌱') : '🃏') + '</div>' +
         '<div class="eyebrow" style="justify-content:center">' + (isTest ? 'MOCK EXAM' : s.mode === 'review' ? 'REVIEW' : 'PRACTICE') + '</div>' +
         '<div class="big-num">' + scoreText + '</div>' +
         '<div class="big-sub">' + subText + '</div>' +
+        ((s.maxCombo || 0) >= 2 ? '<div class="chip chip-amber" style="font-size:11px">🔥 最高连对 ' + s.maxCombo + ' 题</div>' : '') +
         '<div class="summary-stats">' +
           '<div class="item"><span class="v">' + total + '</span><span class="l">作答题目</span></div>' +
           '<div class="item"><span class="v">' + correct + '</span><span class="l">答对</span></div>' +
