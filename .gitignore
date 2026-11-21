@@ -1,0 +1,6 @@
+test/edge-profile/
+test/shots/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
