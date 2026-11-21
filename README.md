@@ -2,6 +2,8 @@
 
 > 7 天，把浙大《概率论与数理统计》第五版前三章盘明白。
 
+**在线访问**：<https://fele-spec.github.io/probability-sprint/> · **源码**：<https://github.com/Fele-Spec/probability-sprint>
+
 一个**纯静态、离线可用、零依赖**的一周冲刺学习平台。为浙江大学盛骤、谢式千、潘承毅《概率论与数理统计》第五版**第一章至第三章**设计：16 个小节、71 张主动回忆卡、94 道原创题（含提示与分步详解）、4 个交互实验室。
 
 学习机制不是拍脑袋：间隔复习、先猜后学、工作样例、交错练习、轻度游戏化——每条都有研究依据，详见平台内「方法」页和仓库里的 [研究笔记](研究笔记.md)。
@@ -123,6 +125,10 @@ probability-sprint/
 - **为什么不用框架**：这是个单人、离线、内容驱动的小工具，静态文件最稳；双击 .bat 就能用。
 - **数学公式**：没有引入 MathJax/KaTeX，用 HTML + CSS 分数样式保证离线可用。复杂公式以分步文字解释为主。
 - **测试**：`node test/validate.cjs` 校验 14 个 JS 文件语法、数据、SRS 调度与存档层；`flow.cjs` / `shots.cjs` 需要本地启动 Edge 调试实例（见脚本头部），用于开发期验证。
+
+### 部署
+
+本站由 **GitHub Pages** 从 `main` 分支根目录直接发布（纯静态，无需构建），推送到 `main` 后自动更新。Pages 地址：<https://fele-spec.github.io/probability-sprint/>。
 
 ### 数据结构（想改内容时）
 
