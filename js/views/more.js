@@ -195,7 +195,7 @@
       '<div class="card card-pad" style="margin-top:16px">' +
         '<div class="card-head"><div class="card-title">📦 关于这个平台</div></div>' +
         '<div class="small muted" style="line-height:1.9">' +
-          '<b style="color:var(--ink)">概率冲刺 v1.0</b> · 为浙大《概率论与数理统计》第五版前三章设计的一周冲刺工具。<br>' +
+          '<b style="color:var(--ink)">概率冲刺 v1.1 · 交互增强版</b> · 为浙大《概率论与数理统计》第五版前三章设计的一周冲刺工具。<br>' +
           '内容覆盖 16 个小节、94 道原创题、13 个成就、4 个交互实验室。纯静态前端，无账号、无网络请求、无依赖。<br>' +
           '设计说明与参考文献见 <a href="#/method">方法页</a>；教材目录按高等教育出版社第五版核对。' +
         '</div>' +

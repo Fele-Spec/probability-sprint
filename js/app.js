@@ -114,6 +114,22 @@
 
   App.setupJuice = function () {
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const glow = document.querySelector('.cursor-glow');
+
+    if (glow && !reduce) {
+      let gx = -999, gy = -999;
+      let pendingGlow = false;
+      document.addEventListener('pointermove', function (e) {
+        gx = e.clientX; gy = e.clientY;
+        if (pendingGlow) return;
+        pendingGlow = true;
+        requestAnimationFrame(function () {
+          glow.style.transform = 'translate3d(' + (gx - 280) + 'px,' + (gy - 280) + 'px,0)';
+          glow.style.opacity = '1';
+          pendingGlow = false;
+        });
+      }, { passive: true });
+    }
 
     // 点击涟漪：给按钮/卡片一个即时的按压反馈
     document.addEventListener('pointerdown', function (e) {

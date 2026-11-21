@@ -52,6 +52,13 @@ async function main() {
   await send('Page.reload', { ignoreCache: true });
   await sleep(1200);
 
+  console.log('\n[鼠标光斑]');
+  await move(320, 260);
+  await sleep(120);
+  await move(760, 420);
+  await sleep(500);
+  assert(await ev(`(()=>{const g=document.querySelector('.cursor-glow'); const s=getComputedStyle(g); return parseFloat(s.opacity) > 0.3 && s.transform !== 'none';})()`), '鼠标移动时光斑跟随');
+
   console.log('\n[真实鼠标：Hero 主按钮]');
   const startBtn = await rect('.hero2 [data-action="today-start"]');
   assert(startBtn && startBtn.w > 0, '拿到按钮坐标');
